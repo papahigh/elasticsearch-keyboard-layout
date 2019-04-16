@@ -15,6 +15,9 @@ endif::[]
 :url-pull-request: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/pulls
 :url-phonetic-plugin: https://github.com/papahigh/elasticsearch-russian-phonetics
 
+image:https://travis-ci.org/papahigh/elasticsearch-russian-keyboard-switcher.svg?branch=master["Build Status", link="https://travis-ci.org/papahigh/elasticsearch-russian-keyboard-switcher"]
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[link=https://opensource.org/licenses/Apache-2.0]
+
 This plugin exposes `*russian_keyboard*` term suggester which suggests terms according to the switched `*QWERTY/ЙЦУКЕН*` keyboard layout.
 
 [source,intent=0]
@@ -28,7 +31,7 @@ This plugin exposes `*russian_keyboard*` term suggester which suggests terms acc
 This plugin may be used in combination with {url-phonetic-plugin}[Russian phonetic analysis] in order to build google-like search experience known as "did you mean?" for russian users.
 
 .link:https://imgur.com/iQ7rp7Ar[Did_you_mean_feature.png]
-image::https://i.imgur.com/iQ7rp7Ar.png[223,800]
+image::https://i.imgur.com/iQ7rp7Ar.png[223,600]
 
 
 == Installation
