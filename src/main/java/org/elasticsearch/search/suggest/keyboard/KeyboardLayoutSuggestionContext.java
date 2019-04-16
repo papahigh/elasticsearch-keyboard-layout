@@ -23,23 +23,29 @@ final class KeyboardLayoutSuggestionContext extends SuggestionSearchContext.Sugg
 
     final KeyboardSwitcher switcher;
 
+    final double minFreq;
+    final double maxFreq;
     final boolean lowercaseToken;
     final boolean addOriginal;
     final boolean preserveCase;
 
     KeyboardLayoutSuggestionContext(QueryShardContext shardContext, KeyboardSwitcher switcher,
-                                    boolean lowercaseToken, boolean addOriginal, boolean preserveCase) {
+                                    double minFreq, double maxFreq, boolean lowercaseToken, boolean preserveCase, boolean addOriginal) {
         super(KeyboardLayoutSuggester.INSTANCE, shardContext);
         this.switcher = switcher;
+        this.minFreq = minFreq;
+        this.maxFreq = maxFreq;
         this.lowercaseToken = lowercaseToken;
-        this.addOriginal = addOriginal;
         this.preserveCase = preserveCase;
+        this.addOriginal = addOriginal;
     }
 
     @Override
     public String toString() {
         return "KeyboardSwitchSuggestionContext[" +
                 ", switcher=" + switcher +
+                ", minFreq=" + minFreq +
+                ", maxFreq=" + maxFreq +
                 ", lowercaseToken=" + lowercaseToken +
                 ", addOriginal=" + addOriginal +
                 ", preserveCase=" + preserveCase +

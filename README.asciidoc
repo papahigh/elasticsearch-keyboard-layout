@@ -28,7 +28,7 @@ This plugin exposes `*russian_keyboard*` term suggester which suggests terms acc
 ;tcnrbq lbcr 1n,            ⟶    жесткий диск 1тб
 ----
 
-This plugin may be used in combination with {url-phonetic-plugin}[Russian phonetic analysis] in order to build google-like search experience known as "did you mean?" for russian users.
+This plugin may be used in combination with {url-phonetic-plugin}[Russian phonetic analysis] in order to build a google-like search experience known as "did you mean?" for russian users.
 
 .link:https://imgur.com/iQ7rp7Ar[Did_you_mean_feature.png]
 image::https://i.imgur.com/iQ7rp7Ar.png[223,600]
@@ -148,6 +148,12 @@ List of the supported suggester options is as follows:
 
 *preserve_case*::
     Whether case should be preserved in the switched suggest options. When *lower_case* is set to *true* this option restores the original case. Defaults to *false*.
+
+*min_freq*::
+    The minimal threshold in number of documents a suggestion should appear in. This can be specified as an absolute number or as a relative percentage of number of documents. This can improve quality by only suggesting high frequency terms. Defaults to 0f and is not enabled. If a value higher than 1 is specified then the number cannot be fractional. The shard level document frequencies are used for this option.
+
+*max_freq*::
+    The maximum threshold in number of documents a suggest text token can exist in order to be included. Can be a relative percentage number (e.g 0.4) or an absolute number to represent document frequencies. If an value higher than 1 is specified then fractional can not be specified. Defaults to -1 and is not enabled. This can be used to exclude high frequency terms from switch keyboard suggestions. The shard level document frequencies are used for this option.
 
 *add_original*::
     Whether original term and its frequency should be included in the suggest options. Default is *false*.

@@ -1,112 +1,114 @@
 "Keyboard Switch Suggester [add_original]":
-- do:
-    cluster.health:
-      wait_for_nodes: 2
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
 
-- is_true: cluster_name
-- is_false: timed_out
-- gte: { number_of_nodes: 2 }
-- gte: { number_of_data_nodes: 2 }
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
 
-- do:
-    indices.create:
-      index: suggester_add_original
-      body:
-        settings:
-          index:
-            analysis:
-              analyzer:
-                my_analyzer:
-                  tokenizer: standard
+  - do:
+      indices.create:
+        index: suggester_add_original
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
 
-        mappings:
-          properties:
-            content:
-              type: text
-              analyzer: "my_analyzer"
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
 
-- do:
-    bulk:
-      index: suggester_add_original
-      refresh: true
-      body:
-      - '{"index": {"_index": "suggester_add_original", "_id": "1"}}'
-      - '{ "content": "To be or not to be" }'
-      - '{"index": {"_index": "suggester_add_original", "_id": "2"}}'
-      - '{ "content": "мороз и солнце и еще кое-что" }'
-      - '{"index": {"_index": "suggester_add_original", "_id": "3"}}'
-      - '{ "content": "Кроссовки для мальчиков и девочек модель B/B-b-b-b" }'
-      - '{"index": {"_index": "suggester_add_original", "_id": "4"}}'
-      - '{ "content": "и куда же без B-52" }'
+  - do:
+      bulk:
+        index: suggester_add_original
+        refresh: true
+        body:
+        - '{"index": {"_index": "suggester_add_original", "_id": "1"}}'
+        - '{ "content": "To be or not to be" }'
+        - '{"index": {"_index": "suggester_add_original", "_id": "2"}}'
+        - '{ "content": "мороз и солнце и еще кое-что" }'
+        - '{"index": {"_index": "suggester_add_original", "_id": "3"}}'
+        - '{ "content": "Кроссовки для мальчиков и девочек модель B/B-b-b-b" }'
+        - '{"index": {"_index": "suggester_add_original", "_id": "4"}}'
+        - '{ "content": "и куда же без B-52" }'
 
-- do:
-    indices.refresh:
-      index: "_all"
+  - do:
+      indices.refresh:
+        index: "_all"
 
-- do:
-    search:
-      size: 0
-      index: suggester_add_original
-      body:
-        suggest:
-          text: 'B Relf ;t ,tp'
-          russian_keyboard_default:
-            russian_keyboard:
-              field: content
-              lowercase_token: true
-              preserve_case: true
-              add_original: true
+  - do:
+      search:
+        size: 0
+        index: suggester_add_original
+        body:
+          suggest:
+            text: 'B Relf ;t ,tp'
+            russian_keyboard_default:
+              russian_keyboard:
+                field: content
+                lowercase_token: true
+                preserve_case: true
+                add_original: true
 
-- length: { suggest.russian_keyboard_default: 4 }
-# suggest [ B ] -> [ И, B ]
-- match: { suggest.russian_keyboard_default.0.text: 'B' }
-- match: { suggest.russian_keyboard_default.0.offset: 0 }
-- match: { suggest.russian_keyboard_default.0.length: 1 }
-- length: { suggest.russian_keyboard_default.0.options: 2 }
-- match: { suggest.russian_keyboard_default.0.options.0.text: 'И' }
-- gte: { suggest.russian_keyboard_default.0.options.0.freq: 1 }
-- lte: { suggest.russian_keyboard_default.0.options.0.freq: 4 }
-- match: { suggest.russian_keyboard_default.0.options.0.switch: true }
-- match: { suggest.russian_keyboard_default.0.options.1.text: 'B' }
-- gte: { suggest.russian_keyboard_default.0.options.1.freq: 1 }
-- lte: { suggest.russian_keyboard_default.0.options.1.freq: 4 }
-- match: { suggest.russian_keyboard_default.0.options.1.switch: false }
+  - length: { suggest.russian_keyboard_default: 4 }
+  # suggest [ B ] -> [ И, B ]
+  - match: { suggest.russian_keyboard_default.0.text: 'B' }
+  - match: { suggest.russian_keyboard_default.0.offset: 0 }
+  - match: { suggest.russian_keyboard_default.0.length: 1 }
+  - length: { suggest.russian_keyboard_default.0.options: 2 }
+  - match: { suggest.russian_keyboard_default.0.options.0.text: 'И' }
+  - gte: { suggest.russian_keyboard_default.0.options.0.freq: 1 }
+  - lte: { suggest.russian_keyboard_default.0.options.0.freq: 4 }
+  - match: { suggest.russian_keyboard_default.0.options.0.switch: true }
+  - match: { suggest.russian_keyboard_default.0.options.1.text: 'B' }
+  - gte: { suggest.russian_keyboard_default.0.options.1.freq: 1 }
+  - lte: { suggest.russian_keyboard_default.0.options.1.freq: 4 }
+  - match: { suggest.russian_keyboard_default.0.options.1.switch: false }
 
-# suggest [ Relf ] -> [ Куда, Relf ]
-- match: { suggest.russian_keyboard_default.1.text: 'Relf' }
-- match: { suggest.russian_keyboard_default.1.offset: 2 }
-- match: { suggest.russian_keyboard_default.1.length: 4 }
-- length: { suggest.russian_keyboard_default.1.options: 2 }
-- match: { suggest.russian_keyboard_default.1.options.0.text: 'Куда' }
-- gte: { suggest.russian_keyboard_default.1.options.0.freq: 1 }
-- lte: { suggest.russian_keyboard_default.1.options.0.freq: 4 }
-- match: { suggest.russian_keyboard_default.1.options.0.switch: true }
-- match: { suggest.russian_keyboard_default.1.options.1.text: 'Relf' }
-- match: { suggest.russian_keyboard_default.1.options.1.freq: 0 }
-- match: { suggest.russian_keyboard_default.1.options.1.switch: false }
+  # suggest [ Relf ] -> [ Куда, Relf ]
+  - match: { suggest.russian_keyboard_default.1.text: 'Relf' }
+  - match: { suggest.russian_keyboard_default.1.offset: 2 }
+  - match: { suggest.russian_keyboard_default.1.length: 4 }
+  - length: { suggest.russian_keyboard_default.1.options: 2 }
+  - match: { suggest.russian_keyboard_default.1.options.0.text: 'Куда' }
+  - gte: { suggest.russian_keyboard_default.1.options.0.freq: 1 }
+  - lte: { suggest.russian_keyboard_default.1.options.0.freq: 4 }
+  - match: { suggest.russian_keyboard_default.1.options.0.switch: true }
+  - match: { suggest.russian_keyboard_default.1.options.1.text: 'Relf' }
+  - match: { suggest.russian_keyboard_default.1.options.1.freq: 0 }
+  - match: { suggest.russian_keyboard_default.1.options.1.switch: false }
 
-# suggest [ ;t ] -> [ же, ;t ]
-- match: { suggest.russian_keyboard_default.2.text: ';t' }
-- match: { suggest.russian_keyboard_default.2.offset: 7 }
-- match: { suggest.russian_keyboard_default.2.length: 2 }
-- length: { suggest.russian_keyboard_default.2.options: 2 }
-- match: { suggest.russian_keyboard_default.2.options.0.text: 'же' }
-- gte: { suggest.russian_keyboard_default.2.options.0.freq: 1 }
-- lt: { suggest.russian_keyboard_default.2.options.0.freq: 2 }
-- match: { suggest.russian_keyboard_default.2.options.0.switch: true }
-- match: { suggest.russian_keyboard_default.2.options.1.text: ';t' }
-- match: { suggest.russian_keyboard_default.2.options.1.freq: 0 }
-- match: { suggest.russian_keyboard_default.2.options.1.switch: false }
+  # suggest [ ;t ] -> [ же, ;t ]
+  - match: { suggest.russian_keyboard_default.2.text: ';t' }
+  - match: { suggest.russian_keyboard_default.2.offset: 7 }
+  - match: { suggest.russian_keyboard_default.2.length: 2 }
+  - length: { suggest.russian_keyboard_default.2.options: 2 }
+  - match: { suggest.russian_keyboard_default.2.options.0.text: 'же' }
+  - gte: { suggest.russian_keyboard_default.2.options.0.freq: 1 }
+  - lt: { suggest.russian_keyboard_default.2.options.0.freq: 2 }
+  - match: { suggest.russian_keyboard_default.2.options.0.switch: true }
+  - match: { suggest.russian_keyboard_default.2.options.1.text: ';t' }
+  - match: { suggest.russian_keyboard_default.2.options.1.freq: 0 }
+  - match: { suggest.russian_keyboard_default.2.options.1.switch: false }
 
-# suggest [ ,tp ] -> [ без, ,tp ]
-- match: { suggest.russian_keyboard_default.3.text: ',tp' }
-- match: { suggest.russian_keyboard_default.3.offset: 10 }
-- match: { suggest.russian_keyboard_default.3.length: 3 }
-- length: { suggest.russian_keyboard_default.3.options: 2 }
-- match: { suggest.russian_keyboard_default.3.options.0.text: 'без' }
-- gte: { suggest.russian_keyboard_default.3.options.0.freq: 1 }
-- lt: { suggest.russian_keyboard_default.3.options.0.freq: 2 }
-- match: { suggest.russian_keyboard_default.3.options.0.switch: true }
-- match: { suggest.russian_keyboard_default.3.options.1.text: ',tp' }
-- match: { suggest.russian_keyboard_default.3.options.1.freq: 0 }
-- match: { suggest.russian_keyboard_default.3.options.1.switch: false }
+  # suggest [ ,tp ] -> [ без, ,tp ]
+  - match: { suggest.russian_keyboard_default.3.text: ',tp' }
+  - match: { suggest.russian_keyboard_default.3.offset: 10 }
+  - match: { suggest.russian_keyboard_default.3.length: 3 }
+  - length: { suggest.russian_keyboard_default.3.options: 2 }
+  - match: { suggest.russian_keyboard_default.3.options.0.text: 'без' }
+  - gte: { suggest.russian_keyboard_default.3.options.0.freq: 1 }
+  - lt: { suggest.russian_keyboard_default.3.options.0.freq: 2 }
+  - match: { suggest.russian_keyboard_default.3.options.0.switch: true }
+  - match: { suggest.russian_keyboard_default.3.options.1.text: ',tp' }
+  - match: { suggest.russian_keyboard_default.3.options.1.freq: 0 }
+  - match: { suggest.russian_keyboard_default.3.options.1.switch: false }

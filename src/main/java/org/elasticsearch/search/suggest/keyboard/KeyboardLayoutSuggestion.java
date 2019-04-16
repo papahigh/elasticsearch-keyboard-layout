@@ -27,6 +27,7 @@ import org.elasticsearch.search.suggest.Suggest;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Objects;
 
 import static org.elasticsearch.common.xcontent.ConstructingObjectParser.constructorArg;
 
@@ -128,6 +129,24 @@ public final class KeyboardLayoutSuggestion extends Suggest.Suggestion<KeyboardL
                 builder.field(FREQ_FIELD.getPreferredName(), freq);
                 builder.field(SWITCH_FIELD.getPreferredName(), switched);
                 return builder;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+
+                Option that = (Option) o;
+                return Objects.equals(text, that.text);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(text);
             }
 
             static Option fromXContent(XContentParser parser) {

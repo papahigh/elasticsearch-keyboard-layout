@@ -16,6 +16,7 @@
 package org.elasticsearch.search.suggest.keyboard;
 
 import com.github.papahigh.keyboardswitcher.KeyboardSwitcher;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -24,6 +25,7 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.CharsRefBuilder;
 import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.suggest.Suggester;
 import org.elasticsearch.search.suggest.phrase.DirectCandidateGenerator;
@@ -55,6 +57,8 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
         final String field;
         final KeyboardSwitcher switcher;
         final KeyboardLayoutSuggestion acc;
+        final double minFreq;
+        final double maxFreq;
         final boolean lowercaseToken;
         final boolean preserveCase;
         final boolean addOriginal;
@@ -64,6 +68,8 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
             this.acc = acc;
             this.field = context.getField();
             this.switcher = context.switcher;
+            this.minFreq = context.minFreq;
+            this.maxFreq = context.maxFreq;
             this.lowercaseToken = context.lowercaseToken;
             this.preserveCase = context.preserveCase;
             this.addOriginal = context.addOriginal;
@@ -78,6 +84,7 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
             Term originalTerm = new Term(field, originalRef);
 
             String token = originalTerm.text();
+            Logger log = Loggers.getLogger(SuggestionsGenerator.class, token);
 
             int length = token.length();
             char[] tokenChars = token.toCharArray();
@@ -85,15 +92,25 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
                     ? token.toLowerCase(Locale.ROOT).toCharArray()
                     : tokenChars;
 
-
             char[] tokenCharsCasedAndSwitched = switcher.switchLayout(tokenCharsCased, 0, length, false);
 
             if (!Arrays.equals(tokenCharsCased, tokenCharsCasedAndSwitched)) {
 
                 BytesRef switchedFreqCountingRef = toBytesRef(tokenCharsCasedAndSwitched);
                 int docFreq = ir.docFreq(new Term(field, switchedFreqCountingRef));
+                double maxDoc = ir.maxDoc();
 
-                if (docFreq > 0) {
+                log.info("----------------------------------------");
+                log.info("tokenCharsCasedAndSwitched: " + Arrays.toString(tokenCharsCasedAndSwitched));
+                log.info("Math.ceil(maxFreq * maxDoc): " + Math.ceil(maxFreq * maxDoc));
+                log.info("maxFreq: " + maxFreq);
+                log.info("minFreq: " + minFreq);
+                log.info("maxDoc: " + maxDoc);
+                log.info("docFreq: " + docFreq);
+                log.info("isNormalFreq: " + isNormalFreq(maxDoc, docFreq));
+                log.info("switcher: " + switcher);
+
+                if (isNormalFreq(maxDoc, docFreq)) {
 
                     BytesRef optionValueRef = lowercaseToken && preserveCase
                             ? toBytesRef(switcher.switchLayout(tokenChars, 0, length, false))
@@ -106,12 +123,22 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
                                 lowercaseToken ? new Term(field, toBytesRef(tokenCharsCased)) : originalTerm
                         );
                         suggestion.addOption(newOriginalOption(originalRef, originalCasedFreq));
+                        log.info("ADDED ORIGINAL ");
                     }
 
                 }
             }
 
             acc.addTerm(suggestion);
+        }
+
+
+        private boolean isNormalFreq(double maxDoc, int docFreq) {
+            return docFreq > 0 &&
+                    // skip low freq terms
+                    (minFreq >= 1f && docFreq >= minFreq || docFreq >= Math.ceil(minFreq * maxDoc)) &&
+                    // skip high freq terms
+                    (maxFreq == -1 || maxFreq >= 1f && docFreq <= maxDoc || docFreq <= Math.ceil(maxFreq * maxDoc));
         }
     }
 

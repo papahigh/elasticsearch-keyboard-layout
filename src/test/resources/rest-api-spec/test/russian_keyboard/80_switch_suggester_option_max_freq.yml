@@ -1,0 +1,91 @@
+"Keyboard Switch Suggester [max freq]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index: suggester_max_freq
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+                    filter: ["lowercase"]
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
+
+  - do:
+      bulk:
+        index: suggester_max_freq
+        refresh: true
+        body:
+        - '{"index": {"_index": "suggester_max_freq", "_id": "1"}}'
+        - '{ "content": "Чемодан на колесах Wings Predator 518-3 Light Green 75 см" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "2"}}'
+        - '{ "content": "Колесо для чемодана RONCATO" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "3"}}'
+        - '{ "content": "Чемодан Xiaomi" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "4"}}'
+        - '{ "content": "Сумка на колесах American Tourister 16G*013 Road Quest *21 Deep Water Blue" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "5"}}'
+        - '{ "content": "Мороженое Baskin Robbins сливочное миндально-фисташковое 64 г" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "6"}}'
+        - '{ "content": "Мороженое Baskin Robbins сливочное миндально-фисташковое с миндалем 60 г" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "7"}}'
+        - '{ "content": "Мороженое Baskin Robbins сливочное ванильно-черничное с прослойкой черники 600 г" }'
+        - '{"index": {"_index": "suggester_max_freq", "_id": "8"}}'
+        - '{ "content": "Apple Mac Pro (MD878)" }'
+
+  - do:
+      indices.refresh:
+        index: "_all"
+
+  - do:
+      search:
+        size: 0
+        index: suggester_max_freq
+        body:
+          suggest:
+            text: 'Vjhj;tyjt'
+            russian_keyboard_default:
+              russian_keyboard:
+                field: content
+                lowercase_token: true
+                preserve_case: true
+                add_original: true
+                max_freq: 0.34
+
+  - length: { suggest.russian_keyboard_default: 1 }
+  - length: { suggest.russian_keyboard_default.0.options: 2 }
+
+
+  - do:
+      search:
+        size: 0
+        index: suggester_max_freq
+        body:
+          suggest:
+            text: 'Vjhj;tyjt'
+            russian_keyboard_default:
+              russian_keyboard:
+                field: content
+                lowercase_token: true
+                preserve_case: true
+                add_original: true
+                max_freq: 0.33
+
+  - length: { suggest.russian_keyboard_default: 1 }
+  - length: { suggest.russian_keyboard_default.0.options: 0 }

@@ -13,6 +13,8 @@
         index: suggester_preserve_case
         body:
           settings:
+            number_of_shards: 2
+            number_of_replicas: 0
             index:
               analysis:
                 analyzer:

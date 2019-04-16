@@ -10,7 +10,7 @@
 
   - do:
       indices.create:
-        index: test_index_defaults
+        index: suggester_defaults
         body:
           settings:
             number_of_shards: 2
@@ -28,16 +28,16 @@
 
   - do:
       bulk:
-        index: test_index_defaults
+        index: suggester_defaults
         refresh: true
         body:
-          - '{"index": {"_index": "test_index_defaults", "_type": "_doc", "_id": "1"}}'
+          - '{"index": {"_index": "suggester_defaults", "_id": "1"}}'
           - '{ "content": "Кроссовки женские Nike MD Runner 2" }'
-          - '{"index": {"_index": "test_index_defaults", "_type": "_doc", "_id": "2"}}'
+          - '{"index": {"_index": "suggester_defaults", "_id": "2"}}'
           - '{ "content": "Валенки мужские Nike MD Runner 2" }'
-          - '{"index": {"_index": "test_index_defaults", "_type": "_doc", "_id": "3"}}'
+          - '{"index": {"_index": "suggester_defaults", "_id": "3"}}'
           - '{ "content": "Кроссовки для мальчиков Nike MD Runner 2." }'
-          - '{"index": {"_index": "test_index_defaults", "_type": "_doc", "_id": "4"}}'
+          - '{"index": {"_index": "suggester_defaults", "_id": "4"}}'
           - '{ "content": "Кроссовки мужские Nike Runner 2 Mid Prem." }'
 
   - do:
@@ -47,7 +47,7 @@
   - do:
       search:
         size: 0
-        index: test_index_defaults
+        index: suggester_defaults
         body:
           suggest:
             text: 'Тшлу Rhjccjdrb Runner 2'
