@@ -16,7 +16,6 @@
 package org.elasticsearch.search.suggest.keyboard;
 
 import com.github.papahigh.keyboardswitcher.KeyboardSwitcher;
-import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -25,7 +24,6 @@ import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.CharsRefBuilder;
 import org.elasticsearch.common.bytes.BytesArray;
-import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.suggest.Suggester;
 import org.elasticsearch.search.suggest.phrase.DirectCandidateGenerator;
@@ -84,7 +82,6 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
             Term originalTerm = new Term(field, originalRef);
 
             String token = originalTerm.text();
-            Logger log = Loggers.getLogger(SuggestionsGenerator.class, token);
 
             int length = token.length();
             char[] tokenChars = token.toCharArray();
@@ -100,16 +97,6 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
                 int docFreq = ir.docFreq(new Term(field, switchedFreqCountingRef));
                 double maxDoc = ir.maxDoc();
 
-                log.info("----------------------------------------");
-                log.info("tokenCharsCasedAndSwitched: " + Arrays.toString(tokenCharsCasedAndSwitched));
-                log.info("Math.ceil(maxFreq * maxDoc): " + Math.ceil(maxFreq * maxDoc));
-                log.info("maxFreq: " + maxFreq);
-                log.info("minFreq: " + minFreq);
-                log.info("maxDoc: " + maxDoc);
-                log.info("docFreq: " + docFreq);
-                log.info("isNormalFreq: " + isNormalFreq(maxDoc, docFreq));
-                log.info("switcher: " + switcher);
-
                 if (isNormalFreq(maxDoc, docFreq)) {
 
                     BytesRef optionValueRef = lowercaseToken && preserveCase
@@ -123,7 +110,6 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
                                 lowercaseToken ? new Term(field, toBytesRef(tokenCharsCased)) : originalTerm
                         );
                         suggestion.addOption(newOriginalOption(originalRef, originalCasedFreq));
-                        log.info("ADDED ORIGINAL ");
                     }
 
                 }
