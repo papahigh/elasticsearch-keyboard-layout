@@ -33,7 +33,7 @@ image::https://i.imgur.com/iQ7rp7Ar.png[223,800]
 
 == Installation
 
-NOTE: Please note that due to the https://github.com/elastic/elasticsearch/pull/30284[serialization issue] this plugin is available only for Elasticsearch 7.0.0 and above.
+WARNING: Please note that due to the https://github.com/elastic/elasticsearch/pull/30284[serialization issue] this plugin is available only for Elasticsearch 7.0.0 and above.
 
 In order to install the plugin, {url-releases-page}[choose a version] and run:
 
@@ -51,7 +51,7 @@ E.g., command for Elasticsearch 7.0.0
 [source,sh,options="wrap"]
 ----
 # install plugin on Elasticsearch 7.0.0
-$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/raw/7.0.0/plugin-distributions/russian-keyboard-layout-7.0.0.zip
+$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/raw/master/dist/russian-keyboard-layout-7.0.0.zip
 ----
 
 After installation this plugin will expose new token filter and term suggester named `*russian_keyboard*`.
