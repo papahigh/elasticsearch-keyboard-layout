@@ -1,0 +1,99 @@
+buildscript {
+    Properties versionProps = new Properties()
+    versionProps.load((InputStream) project.file("${projectDir}/versions.properties").newDataInputStream())
+    ext { versions = versionProps }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "org.elasticsearch.gradle:build-tools:${versionProps.elasticsearch}"
+    }
+}
+
+plugins {
+    id 'java'
+    id 'com.github.hierynomus.license' version "0.15.0"
+}
+
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: "com.github.hierynomus.license"
+apply plugin: 'elasticsearch.esplugin'
+
+group = 'org.elasticsearch.plugin'
+description = 'Elasticsearch plugin for Russian keyboard layout suggestions.'
+version = "${versions.elasticsearch}"
+
+license {
+    header = rootProject.file("HEADER.txt")
+    ext.year = Calendar.getInstance().get(Calendar.YEAR)
+    ext.developer = 'Nikolay Papakha'
+    ignoreFailures false
+    strictCheck true
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+    excludes([
+            "**/*.txt",
+            "**/*.csv",
+            "**/*.properties",
+            "**/*.xml",
+            "**/*.yml"
+    ])
+}
+
+esplugin {
+    name 'russian-keyboard-layout'
+    description project.description
+    version project.version
+    licenseFile project.file('LICENSE.txt')
+    noticeFile project.file('NOTICE.txt')
+    classname 'org.elasticsearch.plugin.RussianKeyboardLayoutPlugin'
+}
+
+checkstyleTest.enabled = true
+dependencyLicenses.enabled = true
+thirdPartyAudit.enabled = true
+
+integTestCluster {
+    numNodes = 2
+}
+
+dependencyLicenses {
+    mapping from: /lucene-.*/, to: 'lucene'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+task codeCoverageReport(type: JacocoReport) {
+
+    executionData fileTree(project.rootDir.absolutePath).include("clebuild/jacoco/*.exec")
+    sourceSets project.sourceSets.main
+
+    reports {
+        xml.enabled true
+        html.enabled true
+        csv.enabled false
+    }
+}
+
+codeCoverageReport.dependsOn {
+    project.test
+}
+
+dependencies {
+    compile "commons-codec:commons-codec:${versions.commonscodec}"
+    compile "org.apache.lucene:lucene-suggest:${versions.lucene}"
+    compile "org.apache.lucene:lucene-analyzers-phonetic:${versions.lucene}"
+
+    testCompile "junit:junit:4.12"
+    testCompile "org.hamcrest:hamcrest-all:1.3"
+    testCompile "org.assertj:assertj-core:3.10.0"
+    testCompile "org.elasticsearch.test:framework:${versions.elasticsearch}"
+}

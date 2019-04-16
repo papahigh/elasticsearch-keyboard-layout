@@ -1,0 +1,157 @@
+= Elasticsearch plugin for Russian keyboard layout suggestions
+Nikolay Papakha
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :paperclip:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+ifndef::env-github[]
+endif::[]
+
+:url-releases-page: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/blob/master/releases.asciidoc
+:url-issue-tracker: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/issues
+:url-pull-request: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/pulls
+:url-phonetic-plugin: https://github.com/papahigh/elasticsearch-russian-phonetics
+
+This plugin exposes `*russian_keyboard*` term suggester which suggests terms according to the switched `*QWERTY/ЙЦУКЕН*` keyboard layout.
+
+[source,intent=0]
+._Examples of suggestions this plugin helps to provide_
+----
+шзрщту ч 64пи               ⟶    iphone x 64gb
+тшлу rhjccjdrb runner 2     ⟶    nike кроссовки runner 2
+;tcnrbq lbcr 1n,            ⟶    жесткий диск 1тб
+----
+
+This plugin may be used in combination with {url-phonetic-plugin}[Russian phonetic analysis] in order to build google-like search experience known as "did you mean?" for russian users.
+
+.link:https://imgur.com/iQ7rp7Ar[Did_you_mean_feature.png]
+image::https://i.imgur.com/iQ7rp7Ar.png[223,800]
+
+
+== Installation
+
+NOTE: Please note that due to the https://github.com/elastic/elasticsearch/pull/30284[serialization issue] this plugin is available only for Elasticsearch 7.0.0 and above.
+
+In order to install the plugin, {url-releases-page}[choose a version] and run:
+
+[source,sh]
+----
+$ bin/elasticsearch-plugin install URL
+----
+
+where `*URL*` points to zip file of the appropriate release which corresponds to your elasticsearch version.
+
+IMPORTANT: The plugin must be installed on every node in the cluster, and each node must be restarted after installation.
+
+E.g., command for Elasticsearch 7.0.0
+
+[source,sh,options="wrap"]
+----
+# install plugin on Elasticsearch 7.0.0
+$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/raw/7.0.0/plugin-distributions/russian-keyboard-layout-7.0.0.zip
+----
+
+After installation this plugin will expose new token filter and term suggester named `*russian_keyboard*`.
+
+== Getting started with Suggester
+You can start using the `*russian_keyboard*` suggester by providing the suggest part of a search request:
+
+[source,javascript]
+--------------------------------------------------
+POST _search
+{
+  "suggest": {
+    "text": "шЗрщту ЧЫ 64пи",
+    "switch_keyboard_suggestion": {
+      "russian_keyboard": {
+        "field": "content",
+        "lowercase_token": true,
+        "preserve_case": true,
+        "add_original": false
+      }
+    }
+  }
+}
+--------------------------------------------------
+
+In the response you should see the original start offset and length in the suggest text and if any found a switched keyboard layout options.
+Each options array contains an option object that includes the suggested text and its document frequency. You may also request original token and its frequency by providing `*add_original*` option.
+
+[source,js]
+--------------------------------------------------
+{
+  "suggest": {
+    "switch_keyboard_suggestion": [
+      {
+        "text": "шЗрщту",
+        "offset": 0,
+        "length": 6,
+        "options": [
+          {
+            "text": "iPhone",
+            "freq": 4,
+            "switch": true
+          }
+        ]
+      },
+      {
+        "text": "ЧЫ",
+        "offset": 7,
+        "length": 2,
+        "options": [
+          {
+            "text": "XS",
+            "freq": 2,
+            "switch": true
+          }
+        ]
+      },
+      {
+        "text": "64пи",
+        "offset": 10,
+        "length": 4,
+        "options": [
+          {
+            "text": "64gb",
+            "freq": 1,
+            "switch": true
+          }
+        ]
+      }
+    ]
+  }
+  ...
+}
+--------------------------------------------------
+
+=== Suggester options
+List of the supported suggester options is as follows:
+
+[horizontal]
+*text*::
+    The suggest text. The suggest text is a required option that needs to be set globally or per suggestion.
+
+*field*::
+    The field to fetch the candidate suggestions from. This is an required option that either needs to be set globally or per suggestion.
+
+*analyzer*::
+    The analyzer to analyse the suggest text with. Defaults to the https://lucene.apache.org/core/8_0_0/analyzers-common/org/apache/lucene/analysis/core/WhitespaceAnalyzer.html[whitespace analyzer].
+
+*lowercase_token*::
+    Lower cases terms before frequency evaluation and after the suggest analysis is done. Default is *false*.
+
+*preserve_case*::
+    Whether case should be preserved in the switched suggest options. When *lower_case* is set to *true* this option restores the original case. Defaults to *false*.
+
+*add_original*::
+    Whether original term and its frequency should be included in the suggest options. Default is *false*.
+
+== Contribute
+Use the {url-issue-tracker}[issue tracker] and/or open {url-pull-request}[pull requests].
+
+== Licence
+This project is released under version 2.0 of the http://www.apache.org/licenses/LICENSE-2.0[Apache Licence].
+

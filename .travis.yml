@@ -1,0 +1,12 @@
+language: java
+jdk: oraclejdk12
+sudo: false
+before_install: chmod +x gradlew
+
+script:
+  - ./gradlew build
+  - ./gradlew check
+  - ./gradlew codeCoverageReport
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

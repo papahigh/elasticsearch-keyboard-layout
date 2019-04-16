@@ -1,0 +1,13 @@
+= Compatible Releases
+Nikolay Papakha
+
+The following table shows the compatible versions of Elasticsearch and Russian keyboard layout suggestions plugin.
+Please find an appropriate release which corresponds to your elasticsearch version.
+
+.Compatible Releases
+[width="100%",cols=">.^3,>.^4,<.^10",options="header"]
+|==============================================
+| Elasticsearch version | Plugin version| URL
+| 7.0.0      | 7.0.0     | https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/raw/7.0.0/plugin-distributions/russian-keyboard-layout-7.0.0.zip
+|==============================================
+

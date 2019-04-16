@@ -1,0 +1,113 @@
+"Russian Keyboard Layout Token Filter [defaults]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index:  russian_keyboard_default
+        body:
+          settings:
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer:  standard
+                    filter: ["russian_keyboard"]
+                filter:
+                  russian_keyboard:
+                    type: russian_keyboard
+
+  - do:
+      indices.analyze:
+        index: russian_keyboard_default
+        body:
+          analyzer: my_analyzer
+          text: Привет, vbh!.
+
+  - length: { tokens: 2 }
+  - match:  { tokens.0.token: Ghbdtn }
+  - match:  { tokens.1.token: мир }
+
+---
+"Russian Keyboard Layout Token Filter [replace=false]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index:  russian_keyboard_replace_false
+        body:
+          settings:
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+                    filter: ["russian_keyboard"]
+                filter:
+                  russian_keyboard:
+                    type: russian_keyboard
+                    replace: false
+
+  - do:
+      indices.analyze:
+        index: russian_keyboard_replace_false
+        body:
+          analyzer: my_analyzer
+          text: Привет, vbh!
+
+  - length: { tokens: 4 }
+  - match:  { tokens.0.token: Ghbdtn }
+  - match:  { tokens.1.token: Привет }
+  - match:  { tokens.2.token: мир }
+  - match:  { tokens.3.token: vbh }
+
+---
+"Russian Keyboard Layout Token Filter [replace=true]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index:  russian_keyboard_replace_true
+        body:
+          settings:
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+                    filter: ["russian_keyboard"]
+                filter:
+                  russian_keyboard:
+                    type: russian_keyboard
+                    replace: true
+
+  - do:
+      indices.analyze:
+        index: russian_keyboard_replace_true
+        body:
+          analyzer: my_analyzer
+          text: Привет, vbh!
+
+  - length: { tokens: 2 }
+  - match:  { tokens.0.token: Ghbdtn }
+  - match:  { tokens.1.token: мир }
