@@ -8,6 +8,6 @@ Please find an appropriate release which corresponds to your elasticsearch versi
 [width="100%",cols=">.^3,>.^4,<.^10",options="header"]
 |==============================================
 | Elasticsearch version | Plugin version| URL
-| 7.0.0      | 7.0.0     | https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/raw/master/dist/russian-keyboard-layout-7.0.0.zip
+| 7.0.0      | 7.0.0     | https://github.com/papahigh/elasticsearch-keyboard-layout/raw/master/dist/keyboard-layout-7.0.0.zip
 |==============================================
 

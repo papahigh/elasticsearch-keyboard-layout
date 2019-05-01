@@ -68,7 +68,7 @@ E.g., command for Elasticsearch 7.0.0
 [source,sh,options="wrap"]
 ----
 # install plugin on Elasticsearch 7.0.0
-$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-keyboard-layout/raw/master/dist/russian-keyboard-layout-7.0.0.zip
+$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-keyboard-layout/raw/master/dist/keyboard-layout-7.0.0.zip
 ----
 
 After installation this plugin will expose new token filter and term suggester named `*keyboard_layout*`.
