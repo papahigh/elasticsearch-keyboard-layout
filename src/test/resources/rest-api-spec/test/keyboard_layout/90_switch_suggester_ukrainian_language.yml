@@ -1,0 +1,72 @@
+"Keyboard Layout Suggester [ukrainian language]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index: suggester_lang_ukr
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+                    filter: ["lowercase"]
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
+
+  - do:
+      bulk:
+        index: suggester_lang_ukr
+        refresh: true
+        body:
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "1"}}'
+        - '{ "content": "Новини - Зернові технології" }'
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "2"}}'
+        - '{ "content": "Компанія “SUPER-Нові технології 1700” пропонує тільки найкраще обладнання від виробників " }'
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "3"}}'
+        - '{ "content": "Чемодан Xiaomi" }'
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "4"}}'
+        - '{ "content": "Мобільні технології це портал про ґаджети" }'
+
+  - do:
+      indices.refresh:
+        index: "_all"
+
+  - do:
+      search:
+        size: 0
+        index: suggester_lang_ukr
+        body:
+          suggest:
+            text: 'nt[yjkjus]'
+            keyboard_layout_default:
+              keyboard_layout:
+                field: content
+                language: ukrainian
+                lowercase_token: true
+                add_original: true
+
+  - length: { suggest.keyboard_layout_default: 1 }
+  - match: { suggest.keyboard_layout_default.0.text: 'nt[yjkjus]' }
+  - match: { suggest.keyboard_layout_default.0.offset: 0 }
+  - match: { suggest.keyboard_layout_default.0.length: 10 }
+  - length: { suggest.keyboard_layout_default.0.options: 2 }
+  - match: { suggest.keyboard_layout_default.0.options.0.text: 'технології' }
+  - match: { suggest.keyboard_layout_default.0.options.0.freq: 3 }
+  - match: { suggest.keyboard_layout_default.0.options.0.switch: true }
+  - match: { suggest.keyboard_layout_default.0.options.1.text: 'nt[yjkjus]' }
+  - match: { suggest.keyboard_layout_default.0.options.1.freq: 0 }
+  - match: { suggest.keyboard_layout_default.0.options.1.switch: false }

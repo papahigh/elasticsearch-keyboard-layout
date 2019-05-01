@@ -1,0 +1,98 @@
+"Keyboard Layout Suggester [preserve_case]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index: suggester_preserve_case
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
+
+  - do:
+      bulk:
+        index: suggester_preserve_case
+        refresh: true
+        body:
+        - '{"index": {"_index": "suggester_preserve_case", "_id": "1"}}'
+        - '{ "content": "To be or not to be" }'
+        - '{"index": {"_index": "suggester_preserve_case", "_id": "2"}}'
+        - '{ "content": "мороз и солнце и еще кое-что" }'
+        - '{"index": {"_index": "suggester_preserve_case", "_id": "3"}}'
+        - '{ "content": "Кроссовки для мальчиков и девочек модель B/B-b-b-b" }'
+        - '{"index": {"_index": "suggester_preserve_case", "_id": "4"}}'
+        - '{ "content": "и куда же без B-52" }'
+
+  - do:
+      indices.refresh:
+        index: "_all"
+
+  - do:
+      search:
+        size: 0
+        index: suggester_preserve_case
+        body:
+          suggest:
+            text: 'B Relf ;t ,tp'
+            keyboard_layout_default:
+              keyboard_layout:
+                field: content
+                language: russian
+                lowercase_token: true
+                preserve_case: true
+
+  - length: { suggest.keyboard_layout_default: 4 }
+  # suggest [ b ] -> [ и, b ]
+  - match: { suggest.keyboard_layout_default.0.text: 'B' }
+  - match: { suggest.keyboard_layout_default.0.offset: 0 }
+  - match: { suggest.keyboard_layout_default.0.length: 1 }
+  - length: { suggest.keyboard_layout_default.0.options: 1 }
+  - match: { suggest.keyboard_layout_default.0.options.0.text: 'И' }
+  - gte: { suggest.keyboard_layout_default.0.options.0.freq: 1 }
+  - lte: { suggest.keyboard_layout_default.0.options.0.freq: 4 }
+  - match: { suggest.keyboard_layout_default.0.options.0.switch: true }
+  # suggest [ relf ] -> [ куда ]
+  - match: { suggest.keyboard_layout_default.1.text: 'Relf' }
+  - match: { suggest.keyboard_layout_default.1.offset: 2 }
+  - match: { suggest.keyboard_layout_default.1.length: 4 }
+  - length: { suggest.keyboard_layout_default.1.options: 1 }
+  - match: { suggest.keyboard_layout_default.1.options.0.text: 'Куда' }
+  - gte: { suggest.keyboard_layout_default.1.options.0.freq: 1 }
+  - lte: { suggest.keyboard_layout_default.1.options.0.freq: 4 }
+  - match: { suggest.keyboard_layout_default.1.options.0.switch: true }
+  # suggest [ ;t ] -> [ же ]
+  - match: { suggest.keyboard_layout_default.2.text: ';t' }
+  - match: { suggest.keyboard_layout_default.2.offset: 7 }
+  - match: { suggest.keyboard_layout_default.2.length: 2 }
+  - length: { suggest.keyboard_layout_default.2.options: 1 }
+  - match: { suggest.keyboard_layout_default.2.options.0.text: 'же' }
+  - gte: { suggest.keyboard_layout_default.2.options.0.freq: 1 }
+  - lt: { suggest.keyboard_layout_default.2.options.0.freq: 2 }
+  - match: { suggest.keyboard_layout_default.2.options.0.switch: true }
+  # suggest [ ,tp ] -> [ без ]
+  - match: { suggest.keyboard_layout_default.3.text: ',tp' }
+  - match: { suggest.keyboard_layout_default.3.offset: 10 }
+  - match: { suggest.keyboard_layout_default.3.length: 3 }
+  - length: { suggest.keyboard_layout_default.3.options: 1 }
+  - match: { suggest.keyboard_layout_default.3.options.0.text: 'без' }
+  - gte: { suggest.keyboard_layout_default.3.options.0.freq: 1 }
+  - lt: { suggest.keyboard_layout_default.3.options.0.freq: 2 }
+  - match: { suggest.keyboard_layout_default.3.options.0.switch: true }

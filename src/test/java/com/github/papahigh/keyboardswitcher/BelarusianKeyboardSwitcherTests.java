@@ -23,11 +23,12 @@ import java.util.Arrays;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 
-public class RussianKeyboardSwitcherTests extends LuceneTestCase {
+public class BelarusianKeyboardSwitcherTests extends LuceneTestCase {
+
 
     public void testEncodeObject() throws EncoderException {
 
-        KeyboardSwitcher switcher = KeyboardSwitcherProvider.provide("russian");
+        KeyboardSwitcher switcher = KeyboardSwitcherProvider.provide("belarusian");
 
         assertEquals(KeyboardSwitcher.EMPTY_STRING, switcher.encode(null));
         assertEquals(KeyboardSwitcher.EMPTY_STRING, switcher.encode((String) null));
@@ -44,24 +45,29 @@ public class RussianKeyboardSwitcherTests extends LuceneTestCase {
 
     }
 
+
+
     public void testSwitchLayout() {
 
-        KeyboardSwitcher switcher = KeyboardSwitcherProvider.provide("russian");
+        KeyboardSwitcher switcher = KeyboardSwitcherProvider.provide("belarusian");
 
-        char[] firstRowEnglish = "qwertyuiop[]QWERTYUIOP{}".toCharArray();
-        char[] firstRowRussian = "йцукенгшщзхъЙЦУКЕНГШЩЗХЪ".toCharArray();
+        char[] firstRowEnglish = "qwertyuiop[QWERTYUIOP{".toCharArray();
+        char[] firstRowRussian = "йцукенгшўзхЙЦУКЕНГШЎЗХ".toCharArray();
+
+        // А Б В Г Д Е Ё Ж З І Й К Л М Н О П Р С Т У Ў Ф Х Ц Ч Ш Ы Ь Э Ю Я
+        // а б в г д е ё ж з і й к л м н о п р с т у ў ф х ц ч ш ы ь э ю я
 
         assertTrue(Arrays.equals(firstRowEnglish, switcher.switchLayout(firstRowRussian, 0, firstRowRussian.length, false)));
         assertTrue(Arrays.equals(firstRowRussian, switcher.switchLayout(firstRowEnglish, 0, firstRowEnglish.length, false)));
 
-        char[] secondRowEnglish = "asdfghjkl;'\\ASDFGHJKL:\"|".toCharArray();
-        char[] secondRowRussian = "фывапролджэёФЫВАПРОЛДЖЭЁ".toCharArray();
+        char[] secondRowEnglish = "asdfghjkl;'ASDFGHJKL:\"".toCharArray();
+        char[] secondRowRussian = "фывапролджэФЫВАПРОЛДЖЭ".toCharArray();
 
         assertTrue(Arrays.equals(secondRowEnglish, switcher.switchLayout(secondRowRussian, 0, secondRowRussian.length, false)));
         assertTrue(Arrays.equals(secondRowRussian, switcher.switchLayout(secondRowEnglish, 0, secondRowEnglish.length, false)));
 
         char[] thirdRowEnglish = "zxcvbnm,.ZXCVBNM<>".toCharArray();
-        char[] thirdRowRussian = "ячсмитьбюЯЧСМИТЬБЮ".toCharArray();
+        char[] thirdRowRussian = "ячсмітьбюЯЧСМІТЬБЮ".toCharArray();
 
         assertTrue(Arrays.equals(thirdRowEnglish, switcher.switchLayout(thirdRowRussian, 0, thirdRowRussian.length, false)));
         assertTrue(Arrays.equals(thirdRowRussian, switcher.switchLayout(thirdRowEnglish, 0, thirdRowEnglish.length, false)));
@@ -69,26 +75,25 @@ public class RussianKeyboardSwitcherTests extends LuceneTestCase {
     }
 
     public void testEncodeString() {
-        KeyboardSwitcher switcher = KeyboardSwitcherProvider.provide("russian");
+        KeyboardSwitcher switcher = KeyboardSwitcherProvider.provide("belarusian");
 
-        String firstRowEnglish = "qwertyuiop[]QWERTYUIOP{}";
-        String firstRowRussian = "йцукенгшщзхъЙЦУКЕНГШЩЗХЪ";
+        String firstRowEnglish = "qwertyuiop[QWERTYUIOP{";
+        String firstRowRussian = "йцукенгшўзхЙЦУКЕНГШЎЗХ";
 
         assertEquals(firstRowEnglish, switcher.encode(firstRowRussian));
         assertEquals(firstRowRussian, switcher.encode(firstRowEnglish));
 
-        String secondRowEnglish = "asdfghjkl;'\\ASDFGHJKL:\"|";
-        String secondRowRussian = "фывапролджэёФЫВАПРОЛДЖЭЁ";
+        String secondRowEnglish = "asdfghjkl;'ASDFGHJKL:\"";
+        String secondRowRussian = "фывапролджэФЫВАПРОЛДЖЭ";
 
         assertEquals(secondRowEnglish, switcher.encode(secondRowRussian));
         assertEquals(secondRowRussian, switcher.encode(secondRowEnglish));
 
         String thirdRowEnglish = "zxcvbnm,.ZXCVBNM<>";
-        String thirdRowRussian = "ячсмитьбюЯЧСМИТЬБЮ";
+        String thirdRowRussian = "ячсмітьбюЯЧСМІТЬБЮ";
 
         assertEquals(thirdRowEnglish, switcher.encode(thirdRowRussian));
         assertEquals(thirdRowRussian, switcher.encode(thirdRowEnglish));
 
     }
-
 }

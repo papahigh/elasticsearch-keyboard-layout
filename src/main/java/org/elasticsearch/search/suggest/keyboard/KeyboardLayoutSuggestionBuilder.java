@@ -15,8 +15,7 @@
  */
 package org.elasticsearch.search.suggest.keyboard;
 
-import com.github.papahigh.keyboardswitcher.KeyboardSwitcher;
-import com.github.papahigh.keyboardswitcher.RussianKeyboardSwitcher;
+import com.github.papahigh.keyboardswitcher.KeyboardSwitcherProvider;
 import org.elasticsearch.ElasticsearchParseException;
 import org.elasticsearch.common.ParseField;
 import org.elasticsearch.common.ParsingException;
@@ -34,21 +33,21 @@ import java.util.Objects;
 
 public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<KeyboardLayoutSuggestionBuilder> {
 
-    public static final String SUGGESTION_NAME = "russian_keyboard";
+    public static final String SUGGESTION_NAME = "keyboard_layout";
 
+    private static final ParseField LANGUAGE_FIELD = new ParseField("language");
     private static final ParseField MAX_FREQ_FIELD = new ParseField("max_freq");
     private static final ParseField MIN_FREQ_FIELD = new ParseField("min_freq");
     private static final ParseField LOWERCASE_TOKEN_FIELD = new ParseField("lowercase_token");
     private static final ParseField ADD_ORIGINAL_FIELD = new ParseField("add_original");
     private static final ParseField PRESERVE_CASE_FIELD = new ParseField("preserve_case");
 
+    private String language;
     private double minFreq = 0d;
     private double maxFreq = -1d;
     private boolean lowercaseToken = false;
     private boolean addOriginal = false;
     private boolean preserveCase = false;
-
-    private static KeyboardSwitcher keyboardSwitcher = new RussianKeyboardSwitcher();
 
     private KeyboardLayoutSuggestionBuilder(String field) {
         super(field);
@@ -56,6 +55,7 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     public KeyboardLayoutSuggestionBuilder(StreamInput in) throws IOException {
         super(in);
+        language = in.readString();
         minFreq = in.readDouble();
         maxFreq = in.readDouble();
         lowercaseToken = in.readBoolean();
@@ -65,6 +65,7 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     private KeyboardLayoutSuggestionBuilder(String field, KeyboardLayoutSuggestionBuilder in) {
         super(field);
+        language = in.language;
         analyzer = in.analyzer;
         text = in.text;
         minFreq = in.minFreq;
@@ -76,6 +77,7 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     @Override
     protected void doWriteTo(StreamOutput out) throws IOException {
+        out.writeString(language);
         out.writeDouble(minFreq);
         out.writeDouble(maxFreq);
         out.writeBoolean(lowercaseToken);
@@ -85,6 +87,7 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     @Override
     protected XContentBuilder innerToXContent(XContentBuilder builder, Params params) throws IOException {
+        builder.field(LANGUAGE_FIELD.getPreferredName(), language);
         builder.field(MIN_FREQ_FIELD.getPreferredName(), minFreq);
         builder.field(MAX_FREQ_FIELD.getPreferredName(), maxFreq);
         builder.field(LOWERCASE_TOKEN_FIELD.getPreferredName(), lowercaseToken);
@@ -96,8 +99,8 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     @Override
     protected SuggestionSearchContext.SuggestionContext build(QueryShardContext context) {
-        KeyboardLayoutSuggestionContext suggestionContext = new KeyboardLayoutSuggestionContext(
-                context, keyboardSwitcher, minFreq, maxFreq, lowercaseToken, preserveCase, addOriginal);
+        KeyboardLayoutSuggestionContext suggestionContext = new KeyboardLayoutSuggestionContext(context,
+                KeyboardSwitcherProvider.provide(language), minFreq, maxFreq, lowercaseToken, preserveCase, addOriginal);
         populateCommonFields(context.getMapperService(), suggestionContext);
         return suggestionContext;
     }
@@ -109,7 +112,8 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     @Override
     protected boolean doEquals(KeyboardLayoutSuggestionBuilder other) {
-        return Objects.equals(minFreq, other.minFreq) &&
+        return Objects.equals(language, other.language) &&
+                Objects.equals(minFreq, other.minFreq) &&
                 Objects.equals(maxFreq, other.maxFreq) &&
                 Objects.equals(lowercaseToken, other.lowercaseToken) &&
                 Objects.equals(preserveCase, other.preserveCase) &&
@@ -118,7 +122,7 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     @Override
     protected int doHashCode() {
-        return Objects.hash(minFreq, maxFreq, lowercaseToken, preserveCase, addOriginal);
+        return Objects.hash(language, minFreq, maxFreq, lowercaseToken, preserveCase, addOriginal);
     }
 
     private void minFreq(double minFreq) {
@@ -151,6 +155,10 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
 
     private void preserveCase(boolean preserveCase) {
         this.preserveCase = preserveCase;
+    }
+
+    private void language(String language) {
+        this.language = language;
     }
 
     public static KeyboardLayoutSuggestionBuilder fromXContent(XContentParser parser) throws IOException {
@@ -186,6 +194,8 @@ public final class KeyboardLayoutSuggestionBuilder extends SuggestionBuilder<Key
                     tmpValuesHolder.lowercaseToken(parser.booleanValue());
                 } else if (PRESERVE_CASE_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
                     tmpValuesHolder.preserveCase(parser.booleanValue());
+                } else if (LANGUAGE_FIELD.match(currentFieldName, parser.getDeprecationHandler())) {
+                    tmpValuesHolder.language(parser.text());
                 } else {
                     throw new ParsingException(parser.getTokenLocation(),
                             "suggester[" + SUGGESTION_NAME + "] doesn't support field [" + currentFieldName + "]");

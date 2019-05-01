@@ -1,4 +1,4 @@
-= Elasticsearch plugin for Russian keyboard layout suggestions
+= Elasticsearch plugin for keyboard layout suggestions
 Nikolay Papakha
 ifdef::env-github[]
 :tip-caption: :bulb:
@@ -10,25 +10,39 @@ endif::[]
 ifndef::env-github[]
 endif::[]
 
-:url-releases-page: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/blob/master/releases.asciidoc
-:url-issue-tracker: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/issues
-:url-pull-request: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/pulls
+:url-releases-page: https://github.com/papahigh/elasticsearch-keyboard-layout/blob/master/releases.asciidoc
+:url-issue-tracker: https://github.com/papahigh/elasticsearch-keyboard-layout/issues
+:url-pull-request: https://github.com/papahigh/elasticsearch-keyboard-layout/pulls
 :url-phonetic-plugin: https://github.com/papahigh/elasticsearch-russian-phonetics
 
-image:https://travis-ci.org/papahigh/elasticsearch-russian-keyboard-switcher.svg?branch=master["Build Status", link="https://travis-ci.org/papahigh/elasticsearch-russian-keyboard-switcher"]
+:url-es-term-suggester: https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-phonetic.html
+:url-es-phonetic-analysis: https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-phonetic.html
+
+image:https://travis-ci.org/papahigh/elasticsearch-keyboard-layout.svg?branch=master["Build Status", link="https://travis-ci.org/papahigh/elasticsearch-keyboard-layout"]
 image:https://img.shields.io/badge/License-Apache%202.0-blue.svg[link=https://opensource.org/licenses/Apache-2.0]
 
-This plugin exposes `*russian_keyboard*` term suggester which suggests terms according to the switched `*QWERTY/ЙЦУКЕН*` keyboard layout.
+This plugin exposes `*keyboard_layout*` term suggester which suggests terms according to the switched keyboard layout.
+
 
 [source,intent=0]
 ._Examples of suggestions this plugin helps to provide_
 ----
 шзрщту ч 64пи               ⟶    iphone x 64gb
+технології                  ⟶    технології
+выявіў некалькі выпадкаў    ⟶    выявіў некалькі выпадкаў
 тшлу rhjccjdrb runner 2     ⟶    nike кроссовки runner 2
 ;tcnrbq lbcr 1n,            ⟶    жесткий диск 1тб
 ----
 
-This plugin may be used in combination with {url-phonetic-plugin}[Russian phonetic analysis] in order to build a google-like search experience known as "did you mean?" for russian users.
+The following keyboard layouts are supported:
+
+* Russian
+* Ukrainian
+* Belarusian
+
+Feel free to open a pull request with any other keyboard layouts.
+
+This plugin may be used in combination with {url-es-term-suggester}[default term suggester] which is based on string similarity in order to build a google-like search experience known as "did you mean?".
 
 .link:https://imgur.com/iQ7rp7Ar[Did_you_mean_feature.png]
 image::https://i.imgur.com/iQ7rp7Ar.png[223,600]
@@ -54,13 +68,13 @@ E.g., command for Elasticsearch 7.0.0
 [source,sh,options="wrap"]
 ----
 # install plugin on Elasticsearch 7.0.0
-$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-russian-keyboard-switcher/raw/master/dist/russian-keyboard-layout-7.0.0.zip
+$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-keyboard-layout/raw/master/dist/russian-keyboard-layout-7.0.0.zip
 ----
 
-After installation this plugin will expose new token filter and term suggester named `*russian_keyboard*`.
+After installation this plugin will expose new token filter and term suggester named `*keyboard_layout*`.
 
 == Getting started with Suggester
-You can start using the `*russian_keyboard*` suggester by providing the suggest part of a search request:
+You can start using the `*keyboard_layout*` suggester by providing the suggest part of a search request:
 
 [source,javascript]
 --------------------------------------------------
@@ -68,9 +82,10 @@ POST _search
 {
   "suggest": {
     "text": "шЗрщту ЧЫ 64пи",
-    "switch_keyboard_suggestion": {
-      "russian_keyboard": {
+    "keyboard_suggestion": {
+      "keyboard_layout": {
         "field": "content",
+        "language": "russian",
         "lowercase_token": true,
         "preserve_case": true,
         "add_original": false
@@ -87,7 +102,7 @@ Each options array contains an option object that includes the suggested text an
 --------------------------------------------------
 {
   "suggest": {
-    "switch_keyboard_suggestion": [
+    "keyboard_suggestion": [
       {
         "text": "шЗрщту",
         "offset": 0,
@@ -139,6 +154,9 @@ List of the supported suggester options is as follows:
 
 *field*::
     The field to fetch the candidate suggestions from. This is an required option that either needs to be set globally or per suggestion.
+
+*language*::
+    The language of the keyboard layout. This is an required option. Available options are: `*russian*`, `*belarusian*`, `*ukrainian*`.
 
 *analyzer*::
     The analyzer to analyse the suggest text with. Defaults to the https://lucene.apache.org/core/8_0_0/analyzers-common/org/apache/lucene/analysis/core/WhitespaceAnalyzer.html[whitespace analyzer].

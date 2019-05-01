@@ -1,4 +1,4 @@
-"Keyboard Switch Suggester [min freq]":
+"Keyboard Layout Suggester [min freq]":
   - do:
       cluster.health:
         wait_for_nodes: 2
@@ -60,16 +60,17 @@
         body:
           suggest:
             text: 'Vjhj;tyjt'
-            russian_keyboard_default:
-              russian_keyboard:
+            keyboard_layout_default:
+              keyboard_layout:
                 field: content
+                language: russian
                 lowercase_token: true
                 preserve_case: true
                 add_original: true
                 min_freq: 0.33
 
-  - length: { suggest.russian_keyboard_default: 1 }
-  - length: { suggest.russian_keyboard_default.0.options: 2 }
+  - length: { suggest.keyboard_layout_default: 1 }
+  - length: { suggest.keyboard_layout_default.0.options: 2 }
 
   - do:
       search:
@@ -78,13 +79,14 @@
         body:
           suggest:
             text: 'Vjhj;tyjt'
-            russian_keyboard_default:
-              russian_keyboard:
+            keyboard_layout_default:
+              keyboard_layout:
                 field: content
+                language: russian
                 lowercase_token: true
                 preserve_case: true
                 add_original: true
                 min_freq: 0.55
 
-  - length: { suggest.russian_keyboard_default: 1 }
-  - length: { suggest.russian_keyboard_default.0.options: 0 }
+  - length: { suggest.keyboard_layout_default: 1 }
+  - length: { suggest.keyboard_layout_default.0.options: 0 }

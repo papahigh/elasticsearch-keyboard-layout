@@ -17,10 +17,8 @@ package org.elasticsearch.plugin;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.elasticsearch.index.analysis.AnalyzerProvider;
-import org.elasticsearch.index.analysis.TokenFilterFactory;
 import org.elasticsearch.index.analysis.TokenizerFactory;
 import org.elasticsearch.index.analysis.keyboard.KeyboardAnalyzerProvider;
-import org.elasticsearch.index.analysis.keyboard.KeyboardLayoutTokenFilterFactory;
 import org.elasticsearch.index.analysis.keyboard.KeyboardLayoutTokenizerFactory;
 import org.elasticsearch.indices.analysis.AnalysisModule;
 import org.elasticsearch.plugins.AnalysisPlugin;
@@ -36,7 +34,7 @@ import java.util.Map;
 import static java.util.Collections.singletonMap;
 
 
-public class RussianKeyboardLayoutPlugin extends Plugin implements SearchPlugin, AnalysisPlugin {
+public class KeyboardLayoutPlugin extends Plugin implements SearchPlugin, AnalysisPlugin {
 
     @Override
     public List<SearchPlugin.SuggesterSpec<?>> getSuggesters() {
@@ -58,10 +56,5 @@ public class RussianKeyboardLayoutPlugin extends Plugin implements SearchPlugin,
     @Override
     public Map<String, AnalysisModule.AnalysisProvider<TokenizerFactory>> getTokenizers() {
         return singletonMap("keyboard_tokenizer", KeyboardLayoutTokenizerFactory::new);
-    }
-
-    @Override
-    public Map<String, AnalysisModule.AnalysisProvider<TokenFilterFactory>> getTokenFilters() {
-        return singletonMap("russian_keyboard", KeyboardLayoutTokenFilterFactory::new);
     }
 }

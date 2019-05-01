@@ -1,8 +1,8 @@
-Elasticsearch plugin for Russian keyboard layout suggestions
-Copyright 2018 Nikolay Papakha
+Elasticsearch plugin for keyboard layout suggestions
+Copyright 2019 Nikolay Papakha
 
 Released under version 2.0 of the Apache Licence
-Repository: https://github.com/papahigh/elasticsearch-russian-keyboard-switcher
+Repository: https://github.com/papahigh/elasticsearch-keyboard-layout
 
 ---
 This product includes software developed by

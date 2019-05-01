@@ -1,0 +1,110 @@
+"Keyboard Layout Suggester [custom suggest analyzer]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index: suggester_custom_analyzer
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+                    filter: ["lowercase"]
+                  my_suggest_analyzer:
+                    tokenizer: keyboard_tokenizer
+                    filter: ["lowercase"]
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
+
+  - do:
+      bulk:
+        index: suggester_custom_analyzer
+        refresh: true
+        body:
+          - '{"index": {"_index": "suggester_custom_analyzer", "_id": "1"}}'
+          - '{ "content": "The quick brown fox jumps over the lazy dog." }'
+          - '{"index": {"_index": "suggester_custom_analyzer", "_id": "2"}}'
+          - '{ "content": "Съешь же еще этих мягких французских булок, да выпей чаю." }'
+          - '{"index": {"_index": "suggester_custom_analyzer", "_id": "3"}}'
+          - '{ "content": "Реклама транслирует потребительский креатив этих мягких французских булок." }'
+          - '{"index": {"_index": "suggester_custom_analyzer", "_id": "4"}}'
+          - '{ "content": "Нишевый проект, следовательно, раскручивает социометрический BTL, полагаясь на инсайдерскую информацию." }'
+
+  - do:
+      indices.refresh:
+        index: "_all"
+
+  - do:
+      search:
+        size: 0
+        index: suggester_custom_analyzer
+        body:
+          suggest:
+            text: 'ИЕД ,EKjr AhfywepcRB[ Brown fox Реклама мягких'
+            keyboard_layout_default:
+              keyboard_layout:
+                field: content
+                language: russian
+                analyzer: my_suggest_analyzer
+
+  - length: { suggest.keyboard_layout_default: 7 }
+  # suggest [ иед ] -> [ btl ]
+  - match: { suggest.keyboard_layout_default.0.text: 'иед' }
+  - match: { suggest.keyboard_layout_default.0.offset: 0 }
+  - match: { suggest.keyboard_layout_default.0.length: 3 }
+  - length: { suggest.keyboard_layout_default.0.options: 1 }
+  - match: { suggest.keyboard_layout_default.0.options.0.text: 'btl' }
+  - match: { suggest.keyboard_layout_default.0.options.0.freq: 1 }
+  - match: { suggest.keyboard_layout_default.0.options.0.switch: true }
+  # suggest [ ,ekjr ] -> [ булок ]
+  - match: { suggest.keyboard_layout_default.1.text: ',ekjr' }
+  - match: { suggest.keyboard_layout_default.1.offset: 4 }
+  - match: { suggest.keyboard_layout_default.1.length: 5 }
+  - length: { suggest.keyboard_layout_default.1.options: 1 }
+  - match: { suggest.keyboard_layout_default.1.options.0.text: 'булок' }
+  - gte: { suggest.keyboard_layout_default.1.options.0.freq: 1 }
+  - lte: { suggest.keyboard_layout_default.1.options.0.freq: 2 }
+  - match: { suggest.keyboard_layout_default.1.options.0.switch: true }
+  # suggest [ ahfywepcrb[ ] -> [ французских ]
+  - match: { suggest.keyboard_layout_default.2.text: 'ahfywepcrb[' }
+  - match: { suggest.keyboard_layout_default.2.offset: 10 }
+  - match: { suggest.keyboard_layout_default.2.length: 11 }
+  - length: { suggest.keyboard_layout_default.2.options: 1 }
+  - match: { suggest.keyboard_layout_default.2.options.0.text: 'французских' }
+  - gte: { suggest.keyboard_layout_default.2.options.0.freq: 1 }
+  - lte: { suggest.keyboard_layout_default.2.options.0.freq: 2 }
+  - match: { suggest.keyboard_layout_default.2.options.0.switch: true }
+  # suggest [ nothing ]
+  - match: { suggest.keyboard_layout_default.3.text: 'brown' }
+  - match: { suggest.keyboard_layout_default.3.offset: 22 }
+  - match: { suggest.keyboard_layout_default.3.length: 5 }
+  - length: { suggest.keyboard_layout_default.3.options: 0 }
+  # suggest [ nothing ]
+  - match: { suggest.keyboard_layout_default.4.text: 'fox' }
+  - match: { suggest.keyboard_layout_default.4.offset: 28 }
+  - match: { suggest.keyboard_layout_default.4.length: 3 }
+  - length: { suggest.keyboard_layout_default.4.options: 0 }
+  # suggest [ nothing ]
+  - match: { suggest.keyboard_layout_default.5.text: 'реклама' }
+  - match: { suggest.keyboard_layout_default.5.offset: 32 }
+  - match: { suggest.keyboard_layout_default.5.length: 7 }
+  - length: { suggest.keyboard_layout_default.5.options: 0 }
+  # suggest [ nothing ]
+  - match: { suggest.keyboard_layout_default.6.text: 'мягких' }
+  - match: { suggest.keyboard_layout_default.6.offset: 40 }
+  - match: { suggest.keyboard_layout_default.6.length: 6 }
+  - length: { suggest.keyboard_layout_default.6.options: 0 }

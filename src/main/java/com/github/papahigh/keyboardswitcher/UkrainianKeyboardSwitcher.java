@@ -15,13 +15,12 @@
  */
 package com.github.papahigh.keyboardswitcher;
 
-
 import java.util.Objects;
 
 /**
- * KeyboardSwitcher for Russian/English keyboard layout
+ * KeyboardSwitcher for Ukrainian/English keyboard layout
  */
-public class RussianKeyboardSwitcher extends KeyboardSwitcher {
+public class UkrainianKeyboardSwitcher extends KeyboardSwitcher {
 
     private static final char[] charMappings;
 
@@ -37,24 +36,26 @@ public class RussianKeyboardSwitcher extends KeyboardSwitcher {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof RussianKeyboardSwitcher;
+        return obj instanceof UkrainianKeyboardSwitcher;
     }
 
     @Override
     public String toString() {
-        return "RussianKeyboardSwitcher{}";
+        return "UkrainianKeyboardSwitcher{}";
     }
 
     static {
 
-        charMappings = new char['ё' + 1];
+        charMappings = new char['ґ' + 1];
 
-        String eng = "qwertyuiop[]QWERTYUIOP{}asdfghjkl;'\\ASDFGHJKL:\"|zxcvbnm,.ZXCVBNM<>";
-        String rus = "йцукенгшщзхъЙЦУКЕНГШЩЗХЪфывапролджэёФЫВАПРОЛДЖЭЁячсмитьбюЯЧСМИТЬБЮ";
+        String eng = "qwertyuiop[]QWERTYUIOP{}asdfghjkl;'ASDFGHJKL:\"\\zxcvbnm,.|ZXCVBNM<>";
+        String ukr = "йцукенгшщзхїЙЦУКЕНГШЩЗХЇфівапролджєФІВАПРОЛДЖЄґячсмитьбюҐЯЧСМИТЬБЮ";
 
         for (int i = 0; i < eng.length(); i++) {
-            charMappings[eng.charAt(i)] = rus.charAt(i);
-            charMappings[rus.charAt(i)] = eng.charAt(i);
+            charMappings[eng.charAt(i)] = ukr.charAt(i);
+            charMappings[ukr.charAt(i)] = eng.charAt(i);
         }
+
     }
+
 }

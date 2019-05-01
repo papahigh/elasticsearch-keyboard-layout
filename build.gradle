@@ -23,7 +23,7 @@ apply plugin: "com.github.hierynomus.license"
 apply plugin: 'elasticsearch.esplugin'
 
 group = 'org.elasticsearch.plugin'
-description = 'Elasticsearch plugin for Russian keyboard layout suggestions.'
+description = 'Elasticsearch plugin for keyboard layout suggestions.'
 version = "${versions.elasticsearch}"
 
 license {
@@ -45,12 +45,12 @@ license {
 }
 
 esplugin {
-    name 'russian-keyboard-layout'
+    name 'keyboard-layout'
     description project.description
     version project.version
     licenseFile project.file('LICENSE.txt')
     noticeFile project.file('NOTICE.txt')
-    classname 'org.elasticsearch.plugin.RussianKeyboardLayoutPlugin'
+    classname 'org.elasticsearch.plugin.KeyboardLayoutPlugin'
 }
 
 checkstyleTest.enabled = true

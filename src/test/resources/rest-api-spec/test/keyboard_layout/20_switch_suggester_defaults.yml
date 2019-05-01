@@ -1,0 +1,88 @@
+"Keyboard Layout Suggester [default options]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index: suggester_defaults
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
+
+  - do:
+      bulk:
+        index: suggester_defaults
+        refresh: true
+        body:
+          - '{"index": {"_index": "suggester_defaults", "_id": "1"}}'
+          - '{ "content": "Кроссовки женские Nike MD Runner 2" }'
+          - '{"index": {"_index": "suggester_defaults", "_id": "2"}}'
+          - '{ "content": "Валенки мужские Nike MD Runner 2" }'
+          - '{"index": {"_index": "suggester_defaults", "_id": "3"}}'
+          - '{ "content": "Кроссовки для мальчиков Nike MD Runner 2." }'
+          - '{"index": {"_index": "suggester_defaults", "_id": "4"}}'
+          - '{ "content": "Кроссовки мужские Nike Runner 2 Mid Prem." }'
+
+  - do:
+      indices.refresh:
+        index: "_all"
+
+  - do:
+      search:
+        size: 0
+        index: suggester_defaults
+        body:
+          suggest:
+            text: 'Тшлу Rhjccjdrb Runner 2'
+            keyboard_layout_default:
+              keyboard_layout:
+                field: content
+                language: russian
+
+  - length: { suggest.keyboard_layout_default: 4 }
+  # suggest [ Тшлу ] -> [ Nike ]
+  - match: { suggest.keyboard_layout_default.0.text: 'Тшлу' }
+  - match: { suggest.keyboard_layout_default.0.offset: 0 }
+  - match: { suggest.keyboard_layout_default.0.length: 4 }
+  - length: { suggest.keyboard_layout_default.0.options: 1 }
+  - match: { suggest.keyboard_layout_default.0.options.0.text: 'Nike' }
+  - gte: { suggest.keyboard_layout_default.0.options.0.freq: 1 }
+  - lte: { suggest.keyboard_layout_default.0.options.0.freq: 4 }
+  - match: { suggest.keyboard_layout_default.0.options.0.switch: true }
+  # suggest [ Rhjccjdrb ] -> [ Кроссовки ]
+  - match: { suggest.keyboard_layout_default.1.text: 'Rhjccjdrb' }
+  - match: { suggest.keyboard_layout_default.1.offset: 5 }
+  - match: { suggest.keyboard_layout_default.1.length: 9 }
+  - length: { suggest.keyboard_layout_default.1.options: 1 }
+  - match: { suggest.keyboard_layout_default.1.options.0.text: 'Кроссовки' }
+  - gte: { suggest.keyboard_layout_default.1.options.0.freq: 1 }
+  - lte: { suggest.keyboard_layout_default.1.options.0.freq: 4 }
+  - match: { suggest.keyboard_layout_default.1.options.0.switch: true }
+  # suggest [ nothing ]
+  - match: { suggest.keyboard_layout_default.2.text: 'Runner' }
+  - match: { suggest.keyboard_layout_default.2.offset: 15 }
+  - match: { suggest.keyboard_layout_default.2.length: 6 }
+  - length: { suggest.keyboard_layout_default.2.options: 0 }
+  # suggest [ nothing ]
+  - match: { suggest.keyboard_layout_default.3.text: '2' }
+  - match: { suggest.keyboard_layout_default.3.offset: 22 }
+  - match: { suggest.keyboard_layout_default.3.length: 1 }
+  - length: { suggest.keyboard_layout_default.3.options: 0 }
+

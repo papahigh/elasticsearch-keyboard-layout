@@ -23,13 +23,29 @@ import java.nio.charset.Charset;
 
 /**
  * Encodes an input string into its switched variant
- * according to a specific keyboard layout.
+ * according to a keyboard layout.
  */
 public abstract class KeyboardSwitcher implements StringEncoder {
 
     static String EMPTY_STRING = new String("".getBytes(Charset.defaultCharset()), Charset.defaultCharset());
 
-    public abstract char[] switchLayout(char[] text, int offset, int length, boolean replace);
+    protected abstract char[] getCharMappings();
+
+    public char[] switchLayout(char[] source, int offset, int length, boolean replace) {
+        if (source == null || source.length == 0) {
+            return new char[0];
+        }
+        char[] switched = replace ? source : new char[length];
+        char[] charMappings = getCharMappings();
+        for (int i = offset; i < offset + length; i++) {
+            final char curr = source[i];
+            if (curr > 0 && curr < charMappings.length) {
+                char mapped = charMappings[curr];
+                switched[i] = mapped != Character.MIN_VALUE ? mapped : curr;
+            }
+        }
+        return switched;
+    }
 
     @Override
     public String encode(String source) {

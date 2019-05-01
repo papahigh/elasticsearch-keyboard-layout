@@ -1,4 +1,4 @@
-"Russian Keyboard Layout Plugin Version":
+"Keyboard Layout Plugin Version":
 
   - skip:
         reason: "contains is a newly added assertion"
@@ -8,4 +8,4 @@
   - set: { master_node: master }
   - do:
       nodes.info: {}
-  - contains:  { nodes.$master.plugins: { name: russian-keyboard-layout } }
+  - contains:  { nodes.$master.plugins: { name: keyboard-layout } }

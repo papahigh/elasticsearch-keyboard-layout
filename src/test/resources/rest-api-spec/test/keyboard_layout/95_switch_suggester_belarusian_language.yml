@@ -1,0 +1,72 @@
+"Keyboard Layout Suggester [belarusian language]":
+  - do:
+      cluster.health:
+        wait_for_nodes: 2
+
+  - is_true: cluster_name
+  - is_false: timed_out
+  - gte: { number_of_nodes: 2 }
+  - gte: { number_of_data_nodes: 2 }
+
+  - do:
+      indices.create:
+        index: suggester_max_freq
+        body:
+          settings:
+            number_of_shards: 2
+            number_of_replicas: 0
+            index:
+              analysis:
+                analyzer:
+                  my_analyzer:
+                    tokenizer: standard
+                    filter: ["lowercase"]
+          mappings:
+            properties:
+              content:
+                type: text
+                analyzer: "my_analyzer"
+
+  - do:
+      bulk:
+        index: suggester_max_freq
+        refresh: true
+        body:
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "1"}}'
+        - '{ "content": "За апошнія некалькі дзён міліцыя выявіла два выпадкі сексуальнага гвалту над непаўналетнімі." }'
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "2"}}'
+        - '{ "content": "Праз некалькі дзён пацярпелая выявіла, што пералічаныя ..." }'
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "3"}}'
+        - '{ "content": "Было некалькі выпадкаў, калі спачатку кіраўніцтва БелАЭС" }'
+        - '{"index": {"_index": "suggester_lang_ukr", "_id": "4"}}'
+        - '{ "content": "І мы ўжо адсачылі некалькі такіх выпадкаў, паведамілі пра іх: пра тое, што некаторыя службы, не буду называць якія, задавалі пытаньні" }'
+
+  - do:
+      indices.refresh:
+        index: "_all"
+
+  - do:
+      search:
+        size: 0
+        index: suggester_lang_ukr
+        body:
+          suggest:
+            text: 'dsgflrfo'
+            keyboard_layout_default:
+              keyboard_layout:
+                field: content
+                language: belarusian
+                lowercase_token: true
+                add_original: true
+
+  - length: { suggest.keyboard_layout_default: 1 }
+  - match: { suggest.keyboard_layout_default.0.text: 'dsgflrfo' }
+  - match: { suggest.keyboard_layout_default.0.offset: 0 }
+  - match: { suggest.keyboard_layout_default.0.length: 8 }
+  - length: { suggest.keyboard_layout_default.0.options: 2 }
+  - match: { suggest.keyboard_layout_default.0.options.0.text: 'выпадкаў' }
+  - match: { suggest.keyboard_layout_default.0.options.0.freq: 2 }
+  - match: { suggest.keyboard_layout_default.0.options.0.switch: true }
+  - match: { suggest.keyboard_layout_default.0.options.1.text: 'dsgflrfo' }
+  - match: { suggest.keyboard_layout_default.0.options.1.freq: 0 }
+  - match: { suggest.keyboard_layout_default.0.options.1.switch: false }
