@@ -28,8 +28,8 @@ This plugin exposes `*keyboard_layout*` term suggester which suggests terms acco
 ._Examples of suggestions this plugin helps to provide_
 ----
 шзрщту ч 64пи               ⟶    iphone x 64gb
-технології                  ⟶    технології
-выявіў некалькі выпадкаў    ⟶    выявіў некалькі выпадкаў
+nt[yjkjus]                  ⟶    технології
+dszdbo ytrfkmrb dsgflrfo    ⟶    выявіў некалькі выпадкаў
 тшлу rhjccjdrb runner 2     ⟶    nike кроссовки runner 2
 ;tcnrbq lbcr 1n,            ⟶    жесткий диск 1тб
 ----
