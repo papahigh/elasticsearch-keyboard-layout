@@ -63,12 +63,12 @@ where `*URL*` points to zip file of the appropriate release which corresponds to
 
 IMPORTANT: The plugin must be installed on every node in the cluster, and each node must be restarted after installation.
 
-E.g., command for Elasticsearch 7.0.1
+E.g., command for Elasticsearch 7.3.0
 
 [source,sh,options="wrap"]
 ----
-# install plugin on Elasticsearch 7.0.1
-$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-keyboard-layout/raw/7.1.0/dist/keyboard-layout-7.1.0.zip
+# install plugin on Elasticsearch 7.3.0
+$ bin/elasticsearch-plugin install https://github.com/papahigh/elasticsearch-keyboard-layout/raw/7.3.0/dist/keyboard-layout-7.3.0.zip
 ----
 
 After installation this plugin will expose new token filter and term suggester named `*keyboard_layout*`.
