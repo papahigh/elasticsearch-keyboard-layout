@@ -1,1 +1,2 @@
 rootProject.name = 'Russian Keyboard Layout Suggestions'
+include ':rest-api-spec'
