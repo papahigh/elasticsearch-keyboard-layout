@@ -26,7 +26,7 @@ public class KeyboardLayoutTokenizerFactory extends AbstractTokenizerFactory {
 
     public KeyboardLayoutTokenizerFactory(IndexSettings indexSettings,
                                           Environment env, String name, Settings settings) {
-        super(indexSettings, settings);
+        super(indexSettings, settings, name);
     }
 
     @Override
