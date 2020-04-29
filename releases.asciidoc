@@ -18,3 +18,4 @@ Please find an appropriate release which corresponds to your elasticsearch versi
 
 - adopt-openjdk 13.0.2
 
+See elasticsearch repository for details
