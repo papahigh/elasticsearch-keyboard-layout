@@ -16,5 +16,5 @@ Please find an appropriate release which corresponds to your elasticsearch versi
 
 == Requirements
 
-- adopt-openjdk 13.0.2+8
+- adopt-openjdk 13.0.2
 
