@@ -1,0 +1,14 @@
+version: "3"
+
+# Run tests in custom JDK
+services:
+  tests:
+    image: openjdk:13-oracle
+    volumes:
+      - ./:/code
+      - ./pref:${HOME}/.java/.systemPrefs
+    environment:
+      - JAVA13_HOME=/usr/java/openjdk-13
+    working_dir: /code
+    command:
+      ./gradlew check
