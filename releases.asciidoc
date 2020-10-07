@@ -8,6 +8,7 @@ Please find an appropriate release which corresponds to your elasticsearch versi
 [width="100%",cols=">.^3,>.^4,<.^10",options="header"]
 |==============================================
 | Elasticsearch version | Plugin version| URL
+| 7.6.0      | 7.6.0     | https://github.com/papahigh/elasticsearch-keyboard-layout/raw/7.6.0/dist/keyboard-layout-7.6.0.zip
 | 7.3.0      | 7.3.0     | https://github.com/papahigh/elasticsearch-keyboard-layout/raw/7.3.0/dist/keyboard-layout-7.3.0.zip
 | 7.2.0      | 7.2.0     | https://github.com/papahigh/elasticsearch-keyboard-layout/raw/7.2.0/dist/keyboard-layout-7.2.0.zip
 | 7.1.0      | 7.1.0     | https://github.com/papahigh/elasticsearch-keyboard-layout/raw/7.1.0/dist/keyboard-layout-7.1.0.zip
