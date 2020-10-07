@@ -24,15 +24,17 @@ import org.elasticsearch.index.analysis.AbstractIndexAnalyzerProvider;
 
 public class KeyboardAnalyzerProvider extends AbstractIndexAnalyzerProvider<WhitespaceAnalyzer> {
 
-    private static final WhitespaceAnalyzer INSTANCE = new WhitespaceAnalyzer();
+    private final WhitespaceAnalyzer analyzer;
 
     public KeyboardAnalyzerProvider(IndexSettings indexSettings, Environment env,
                                     String name, Settings settings) {
         super(indexSettings, name, settings);
+        analyzer = new WhitespaceAnalyzer();
+        analyzer.setVersion(version);
     }
 
     @Override
     public WhitespaceAnalyzer get() {
-        return INSTANCE;
+        return this.analyzer;
     }
 }
