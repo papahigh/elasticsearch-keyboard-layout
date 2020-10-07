@@ -145,6 +145,8 @@ Each options array contains an option object that includes the suggested text an
 }
 --------------------------------------------------
 
+Extension for go client github.com/olivere/elastic: https://github.com/aaerofeev/go-elasic-keyboard-layout
+
 === Suggester options
 List of the supported suggester options is as follows:
 

@@ -1,0 +1,25 @@
+version: "3"
+
+# Environment for elasticsearch 7.6.x
+services:
+  # run tests
+  tests:
+    image: openjdk:13-oracle
+    volumes:
+      - ./:/code
+    environment:
+      - JAVA13_HOME=/usr/java/openjdk-13
+    working_dir: /code
+    command:
+      ./gradlew check
+
+  # run assemble
+  assemble:
+    image: openjdk:13-oracle
+    volumes:
+      - ./:/code
+    environment:
+      - JAVA13_HOME=/usr/java/openjdk-13
+    working_dir: /code
+    command:
+      ./gradlew assemble

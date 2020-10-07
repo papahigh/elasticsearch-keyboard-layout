@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Nikolay Papakha
+ * Copyright 2020 Nikolay Papakha
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,15 @@ import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.CharsRefBuilder;
 import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.text.Text;
+import org.elasticsearch.search.suggest.Suggest;
 import org.elasticsearch.search.suggest.Suggester;
+import org.elasticsearch.search.suggest.SuggestionSearchContext;
 import org.elasticsearch.search.suggest.phrase.DirectCandidateGenerator;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 
@@ -41,12 +45,56 @@ public class KeyboardLayoutSuggester extends Suggester<KeyboardLayoutSuggestionC
     }
 
     @Override
-    protected KeyboardLayoutSuggestion innerExecute(String name, KeyboardLayoutSuggestionContext context,
+    protected KeyboardLayoutSuggestion innerExecute(String name, KeyboardLayoutSuggestionContext suggestion,
                                                     IndexSearcher searcher, CharsRefBuilder spare) throws IOException {
-        KeyboardLayoutSuggestion accumulator = new KeyboardLayoutSuggestion(name, context.getSize());
-        SuggestionsGenerator generator = new SuggestionsGenerator(searcher.getIndexReader(), accumulator, context);
-        DirectCandidateGenerator.analyze(context.getAnalyzer(), context.getText(), context.getField(), generator, spare);
-        return accumulator;
+        KeyboardLayoutSuggestion response = new KeyboardLayoutSuggestion(name, suggestion.getSize());
+        SuggestionsGenerator generator = new SuggestionsGenerator(searcher.getIndexReader(), response, suggestion);
+        DirectCandidateGenerator.analyze(suggestion.getAnalyzer(), suggestion.getText(), suggestion.getField(), generator, spare);
+        return response;
+    }
+
+    @Override
+    protected Suggest.Suggestion<? extends Suggest.Suggestion.Entry<? extends Suggest.Suggestion.Entry.Option>> emptySuggestion(
+            String name, KeyboardLayoutSuggestionContext suggestion, CharsRefBuilder spare) throws IOException {
+
+        KeyboardLayoutSuggestion layoutSuggestion = new KeyboardLayoutSuggestion(name, suggestion.getSize());
+        List<Token> tokens = queryTerms(suggestion, spare);
+        for (Token token : tokens) {
+            Text key = new Text(new BytesArray(token.term.bytes()));
+            KeyboardLayoutSuggestion.Entry resultEntry = new KeyboardLayoutSuggestion.Entry(
+                    key, token.startOffset, token.endOffset - token.startOffset);
+            layoutSuggestion.addTerm(resultEntry);
+        }
+        return layoutSuggestion;
+    }
+
+    private static List<Token> queryTerms(SuggestionSearchContext.SuggestionContext suggestion,
+                                          CharsRefBuilder spare) throws IOException {
+        final List<Token> result = new ArrayList<>();
+        final String field = suggestion.getField();
+        DirectCandidateGenerator.analyze(suggestion.getAnalyzer(), suggestion.getText(), field,
+                new DirectCandidateGenerator.TokenConsumer() {
+                    @Override
+                    public void nextToken() {
+                        Term term = new Term(field, BytesRef.deepCopyOf(fillBytesRef(new BytesRefBuilder())));
+                        result.add(new Token(term, offsetAttr.startOffset(), offsetAttr.endOffset()));
+                    }
+                }, spare);
+        return result;
+    }
+
+    private static class Token {
+
+        public final Term term;
+        public final int startOffset;
+        public final int endOffset;
+
+        private Token(Term term, int startOffset, int endOffset) {
+            this.term = term;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
+
     }
 
     static class SuggestionsGenerator extends DirectCandidateGenerator.TokenConsumer {

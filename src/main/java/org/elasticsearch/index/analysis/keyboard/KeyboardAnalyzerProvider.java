@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Nikolay Papakha
+ * Copyright 2020 Nikolay Papakha
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,18 @@ import org.elasticsearch.index.analysis.AbstractIndexAnalyzerProvider;
 
 public class KeyboardAnalyzerProvider extends AbstractIndexAnalyzerProvider<WhitespaceAnalyzer> {
 
-    private static final WhitespaceAnalyzer INSTANCE = new WhitespaceAnalyzer();
+    private final WhitespaceAnalyzer analyzer;
 
     public KeyboardAnalyzerProvider(IndexSettings indexSettings, Environment env,
                                     String name, Settings settings) {
         super(indexSettings, name, settings);
+
+        analyzer = new WhitespaceAnalyzer();
+        analyzer.setVersion(version);
     }
 
     @Override
     public WhitespaceAnalyzer get() {
-        return INSTANCE;
+        return this.analyzer;
     }
 }
