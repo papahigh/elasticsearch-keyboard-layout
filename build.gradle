@@ -30,6 +30,7 @@ configurations.all {
 apply plugin: 'jacoco'
 apply plugin: "com.github.hierynomus.license"
 apply plugin: 'elasticsearch.esplugin'
+apply plugin: 'elasticsearch.testclusters'
 
 group = 'org.elasticsearch.plugin'
 description = 'Elasticsearch plugin for keyboard layout suggestions.'
@@ -68,8 +69,8 @@ checkstyleTest.enabled = true
 dependencyLicenses.enabled = true
 thirdPartyAudit.enabled = true
 
-integTestCluster {
-    numNodes = 2
+testClusters.configureEach {
+    it.numberOfNodes = 2
 }
 
 dependencyLicenses {
